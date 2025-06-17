@@ -1,4 +1,5 @@
-Flask==2.3.3
-gunicorn==21.2.0
-git+https://github.com/jdepoix/youtube-transcript-api.git
+--upgrade-strategy eager
+git+https://github.com/jdepoix/youtube-transcript-api.git@master#egg=youtube_transcript_api
+flask
+gunicorn
 defusedxml
