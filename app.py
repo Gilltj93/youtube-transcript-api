@@ -1,25 +1,20 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
 import requests
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route("/")
 def home():
-    return 'YouTube Transcript API is Live!'
+    return "Deploy successful. Go to /myip to get public IP."
 
-@app.route('/ip')
-def get_ip():
-    return jsonify({'ip': request.remote_addr})
+@app.route("/myip")
+def get_public_ip():
+    # Use external service to determine your public IP (Render's outbound IP)
+    try:
+        ip = requests.get('https://ifconfig.me', timeout=5).text
+        return f"Your public IP is: {ip}"
+    except Exception as e:
+        return f"Error retrieving IP: {str(e)}", 500
 
-@app.route('/transcript')
-def transcript():
-    video_id = request.args.get('video_id')
-    if not video_id:
-        return jsonify({'error': 'video_id is required'}), 400
-    # Example stub
-    return jsonify({'video_id': video_id, 'transcript': 'This is a fake transcript for testing.'})
-
-if __name__ == '__main__':
-    import os
-    port = int(os.environ.get('PORT', 10000))
-    app.run(host='0.0.0.0', port=port)
+if __name__ == "__main__":
+    app.run(debug=True)
