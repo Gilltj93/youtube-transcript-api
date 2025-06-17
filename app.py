@@ -5,28 +5,24 @@ from youtube_transcript_api.formatters import JSONFormatter
 
 app = Flask(__name__)
 
-@app.route('/')
-def home():
-    return 'YouTube Transcript API is live!', 200
+# Set up proxy rotation (you can add more proxies here)
+proxies = [
+    "http://scraperapi:<kezvt8im3kx8ak7ywwvk>@proxy-server.scraperapi.com:8001"
+]
+proxy_config = GenericProxyConfig(proxies)
 
-@app.route('/transcript', methods=['GET'])
+@app.route("/transcript", methods=["GET"])
 def get_transcript():
-    video_id = request.args.get('video_id')
+    video_id = request.args.get("video_id")
     if not video_id:
-        return jsonify({'error': 'Missing video_id parameter'}), 400
+        return jsonify({"error": "Missing video_id"}), 400
 
     try:
-        # Replace with your real proxy URL and credentials
-        proxy_config = GenericProxyConfig([
-            "http://scraperapi:kezvt8im3kx8ak7ywwvk@proxy.scraperapi.com:8001"
-        ])
-
-        transcript = YouTubeTranscriptApi.get_transcript(video_id, proxies=proxy_config)
+        transcript = YouTubeTranscriptApi.get_transcript(video_id, proxy=proxy_config)
         formatter = JSONFormatter()
-        return formatter.format_transcript(transcript), 200
-
+        return formatter.format_transcript(transcript)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
