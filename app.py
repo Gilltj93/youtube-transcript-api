@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound, VideoUnavailable
 from youtube_transcript_api.formatters import JSONFormatter
-from youtube_transcript_api.proxy import GenericProxyConfig
+from youtube_transcript_api._proxy import GenericProxyConfig
 import random
 
 app = Flask(__name__)
@@ -26,7 +26,6 @@ def get_transcript():
     if not video_id:
         return jsonify({"error": "Missing video_id parameter"}), 400
 
-    # Rotate proxies randomly
     for proxy_url in random.sample(PROXIES, len(PROXIES)):
         proxy = GenericProxyConfig(http=proxy_url)
         try:
