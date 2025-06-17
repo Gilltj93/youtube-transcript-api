@@ -2,7 +2,5 @@ services:
   - type: web
     name: youtube-transcript-api
     env: python
-    plan: free
-    buildCommand: ""
-    startCommand: gunicorn app:app
-    autoDeploy: true
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
