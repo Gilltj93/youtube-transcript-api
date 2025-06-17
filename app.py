@@ -31,7 +31,7 @@ def get_transcript():
     proxy_config = GenericProxyConfig(proxies=[proxy_url])
 
     try:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id, proxy_config=proxy_config)
+        transcript = YouTubeTranscriptApi.get_transcript(video_id, proxy=proxy_config)
         formatter = JSONFormatter()
         return formatter.format_transcript(transcript)
     except TranscriptsDisabled:
