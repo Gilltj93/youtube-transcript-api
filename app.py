@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled
 from youtube_transcript_api._proxy import GenericProxyConfig
+from youtube_transcript_api.formatters import JSONFormatter
 import random
 
 app = Flask(__name__)
@@ -25,16 +26,19 @@ def get_transcript():
     if not video_id:
         return jsonify({"error": "Missing 'video_id' parameter"}), 400
 
-    proxy = random.choice(PROXIES)
-    proxy_config = GenericProxyConfig(proxy_url=proxy)
+    # Randomly choose one proxy for each request
+    proxy_url = random.choice(PROXIES)
+    proxy_config = GenericProxyConfig(proxies=[proxy_url])
 
     try:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id, proxy=proxy_config)
-        return jsonify(transcript)
+        transcript = YouTubeTranscriptApi.get_transcript(video_id, proxy_config=proxy_config)
+        formatter = JSONFormatter()
+        return formatter.format_transcript(transcript)
     except TranscriptsDisabled:
         return jsonify({"error": "Transcripts are disabled for this video"}), 403
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# This section is only used for local testing (not needed for Render)
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
