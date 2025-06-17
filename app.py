@@ -2,71 +2,48 @@ from flask import Flask, request, jsonify
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import (
     TranscriptsDisabled,
-    VideoUnavailable,
     NoTranscriptFound,
+    VideoUnavailable
 )
-
-# Optional proxy config — uncomment and replace if needed
-# from youtube_transcript_api._proxy import GenericProxyConfig
-# proxy_config = GenericProxyConfig(
-#     proxies=["http://your-proxy.com:port"],  # Replace with a working proxy or pool
-#     number_of_retries=3
-# )
+from youtube_transcript_api.proxy import GenericProxyConfig
+import random
 
 app = Flask(__name__)
 
-@app.route('/')
-def index():
-    return "YouTube Transcript API is live!"
+# ✅ Free HTTP proxies from your screenshot
+PROXY_LIST = [
+    "http://156.228.125.161:3129",
+    "http://156.228.102.99:3129",
+    "http://154.213.166.248:3129",
+    "http://156.228.119.178:3129",
+    "http://154.213.160.143:3129",
+    "http://154.213.167.98:3129",
+    "http://154.214.1.10:3129",
+    "http://156.228.105.58:3129",
+    "http://156.228.93.61:3129",
+    "http://156.242.36.156:3129"
+]
 
-@app.route('/upload_transcript', methods=['POST'])
-def upload_transcript():
-    data = request.get_json()
-    video_id = data.get('video_id')
-
-    if not video_id:
-        return jsonify({'error': 'Missing video_id'}), 400
-
-    try:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id)
-        # transcript = YouTubeTranscriptApi.get_transcript(video_id, proxy=proxy_config)  # Use this line if proxy needed
-        return jsonify({
-            'video_id': video_id,
-            'lines': len(transcript),
-            'transcript': transcript
-        })
-    except TranscriptsDisabled:
-        return jsonify({"error": "Transcripts are disabled for this video"}), 403
-    except VideoUnavailable:
-        return jsonify({"error": "Video is unavailable"}), 404
-    except NoTranscriptFound:
-        return jsonify({"error": "No transcript found for this video"}), 404
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/transcript', methods=['GET'])
+@app.route("/transcript", methods=["GET"])
 def get_transcript():
     video_id = request.args.get("video_id")
-
     if not video_id:
         return jsonify({"error": "Missing video_id"}), 400
 
+    selected_proxy = random.choice(PROXY_LIST)
+    proxy_config = GenericProxyConfig(proxies=[selected_proxy], proxy_timeout=10)
+
     try:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id)
-        # transcript = YouTubeTranscriptApi.get_transcript(video_id, proxy=proxy_config)  # Use this line if proxy needed
-        return jsonify({
-            'video_id': video_id,
-            'lines': len(transcript),
-            'transcript': transcript
-        })
+        transcript = YouTubeTranscriptApi.get_transcript(video_id, proxy=proxy_config)
+        return jsonify(transcript)
     except TranscriptsDisabled:
         return jsonify({"error": "Transcripts are disabled for this video"}), 403
+    except NoTranscriptFound:
+        return jsonify({"error": "No transcript found"}), 404
     except VideoUnavailable:
         return jsonify({"error": "Video is unavailable"}), 404
-    except NoTranscriptFound:
-        return jsonify({"error": "No transcript found for this video"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+if __name__ == "__main__":
+    app.run(debug=True)
