@@ -16,7 +16,7 @@ def get_transcript():
 
     # Optional: set up a proxy to bypass region/IP blocks
     proxy_config = GenericProxyConfig(
-        proxy_url="http://scraperapi:YOUR_KEY@proxy.scraperapi.com:8001"  # Replace with your proxy credentials
+        proxy_url="http://scraperapi:kezvt8im3kx8ak7ywwvk@proxy.scraperapi.com:8001"  # Replace with your proxy credentials
     )
 
     try:
