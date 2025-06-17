@@ -1,49 +1,43 @@
 from flask import Flask, request, jsonify
-from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled
+from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, VideoUnavailable
+from youtube_transcript_api._errors import NoTranscriptFound
 from youtube_transcript_api._proxy import GenericProxyConfig
-import random
-import traceback
+
+import youtube_transcript_api
+print("✅ Running local version from:", youtube_transcript_api.__file__)
 
 app = Flask(__name__)
-
-# List of proxies
-PROXIES = [
-    "http://156.228.125.161:3129",
-    "http://156.228.102.99:3129",
-    "http://154.213.166.248:3129",
-    "http://156.228.119.178:3129",
-    "http://154.213.160.143:3129",
-    "http://154.213.167.98:3129",
-    "http://154.214.1.10:3129",
-    "http://156.228.105.58:3129",
-    "http://156.228.93.61:3129",
-    "http://156.242.36.156:3129",
-]
-
-@app.route("/")
-def index():
-    return jsonify({
-        "message": "YouTube Transcript API is live",
-        "usage": "/transcript?video_id=YOUR_VIDEO_ID"
-    })
 
 @app.route("/transcript", methods=["GET"])
 def get_transcript():
     video_id = request.args.get("video_id")
     if not video_id:
-        return jsonify({"error": "Missing 'video_id' parameter"}), 400
+        return jsonify({"error": "Missing video_id parameter"}), 400
 
-    proxy_url = random.choice(PROXIES)
-    proxy_config = GenericProxyConfig(proxy_url=proxy_url)
+    # Optional: set up a proxy to bypass region/IP blocks
+    proxy_config = GenericProxyConfig(
+        proxy_url="http://scraperapi:YOUR_KEY@proxy.scraperapi.com:8001"  # Replace with your proxy credentials
+    )
 
     try:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id, proxy=proxy_config)
-        return jsonify(transcript)
+        transcript = YouTubeTranscriptApi.get_transcript(
+            video_id,
+            proxies=proxy_config.get_next_proxy()
+        )
+        return jsonify({"transcript": transcript})
+
     except TranscriptsDisabled:
         return jsonify({"error": "Transcripts are disabled for this video"}), 403
+    except VideoUnavailable:
+        return jsonify({"error": "Video is unavailable"}), 404
+    except NoTranscriptFound:
+        return jsonify({"error": "Transcript not found"}), 404
     except Exception as e:
-        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route("/", methods=["GET"])
+def health_check():
+    return "YouTube Transcript API is running."
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=10000)
