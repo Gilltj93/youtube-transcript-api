@@ -25,9 +25,9 @@ def get_transcript():
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
-@app.route('/', methods=['GET'])
-def health_check():
-    return 'Transcript API is running!'
+@app.route('/')
+def home():
+    return "Transcript API is running!"
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
