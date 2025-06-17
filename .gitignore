@@ -1,11 +1,3 @@
-.idea
-.venv
-virtualenv
+__pycache__/
+.env
 *.pyc
-dist
-build
-*.egg-info
-upload_new_version.sh
-.coverage
-coverage.xml
-.DS_STORE
