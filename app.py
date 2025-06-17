@@ -7,10 +7,11 @@ from youtube_transcript_api._errors import (
 )
 from youtube_transcript_api.proxy import GenericProxyConfig
 import random
+import re
 
 app = Flask(__name__)
 
-# ✅ Free HTTP proxies from your screenshot
+# ✅ Your free HTTP proxies
 PROXY_LIST = [
     "http://156.228.125.161:3129",
     "http://156.228.102.99:3129",
@@ -24,26 +25,39 @@ PROXY_LIST = [
     "http://156.242.36.156:3129"
 ]
 
+# ✅ Helper to extract video ID from URL or raw input
+def extract_video_id(input_str):
+    if not input_str:
+        return None
+    match = re.search(r"(?:v=|youtu\.be/)([A-Za-z0-9_-]{11})", input_str)
+    if match:
+        return match.group(1)
+    if len(input_str) == 11:
+        return input_str
+    return None
+
 @app.route("/transcript", methods=["GET"])
 def get_transcript():
-    video_id = request.args.get("video_id")
+    raw_input = request.args.get("video_id") or request.args.get("url")
+    video_id = extract_video_id(raw_input)
+
     if not video_id:
-        return jsonify({"error": "Missing video_id"}), 400
+        return jsonify({"error": "Missing or invalid video ID"}), 400
 
-    selected_proxy = random.choice(PROXY_LIST)
-    proxy_config = GenericProxyConfig(proxies=[selected_proxy], proxy_timeout=10)
+    random.shuffle(PROXY_LIST)  # Shuffle proxy list each time
 
-    try:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id, proxy=proxy_config)
-        return jsonify(transcript)
-    except TranscriptsDisabled:
-        return jsonify({"error": "Transcripts are disabled for this video"}), 403
-    except NoTranscriptFound:
-        return jsonify({"error": "No transcript found"}), 404
-    except VideoUnavailable:
-        return jsonify({"error": "Video is unavailable"}), 404
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    for proxy_url in PROXY_LIST:
+        proxy_config = GenericProxyConfig(proxies=[proxy_url], proxy_timeout=10)
+        try:
+            transcript = YouTubeTranscriptApi.get_transcript(video_id, proxy=proxy_config)
+            return jsonify(transcript)
+        except (TranscriptsDisabled, NoTranscriptFound, VideoUnavailable):
+            return jsonify({"error": "Transcript not available for this video"}), 404
+        except Exception as e:
+            # Try the next proxy if this one fails
+            continue
+
+    return jsonify({"error": "All proxies failed or were blocked by YouTube"}), 502
 
 if __name__ == "__main__":
     app.run(debug=True)
