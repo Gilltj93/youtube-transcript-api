@@ -27,3 +27,4 @@ from ._errors import (
     YouTubeDataUnparsable,
     PoTokenRequired,
 )
+from ._proxy import GenericProxyConfig
