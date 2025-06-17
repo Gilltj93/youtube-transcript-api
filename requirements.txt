@@ -1,5 +1,3 @@
-Flask==3.0.3
-gunicorn==22.0.0
-waitress
+flask
+gunicorn
 git+https://github.com/glitchdetector/youtube-transcript-api.git@proxy-support
-defusedxml==0.7.1
