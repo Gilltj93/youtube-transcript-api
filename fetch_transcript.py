@@ -1,8 +1,8 @@
 from youtube_transcript_api import YouTubeTranscriptApi
 import requests
 
-video_id = "data.get("video_id")
-api_url = "https://your-service-name.onrender.com/upload_transcript"  # Replace with your actual Render app URL
+video_id = input("Enter YouTube video ID: ")
+api_url = "https://your-service-name.onrender.com/upload_transcript"  # Replace with your Render URL
 
 try:
     transcript = YouTubeTranscriptApi.get_transcript(video_id)
