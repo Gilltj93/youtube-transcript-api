@@ -5,10 +5,20 @@ from youtube_transcript_api.formatters import JSONFormatter
 
 app = Flask(__name__)
 
-# Set up proxy rotation (you can add more proxies here)
+# Paste your ProxyScrape HTTP proxies here
 proxies = [
-    "http://scraperapi:<kezvt8im3kx8ak7ywwvk>@proxy-server.scraperapi.com:8001"
+    "http://156.228.125.161:3129",
+    "http://156.228.102.99:3129",
+    "http://154.213.166.248:3129",
+    "http://156.228.119.178:3129",
+    "http://154.213.160.143:3129",
+    "http://154.213.167.98:3129",
+    "http://154.214.1.10:3129",
+    "http://156.228.105.58:3129",
+    "http://156.228.93.61:3129",
+    "http://156.242.36.156:3129"
 ]
+
 proxy_config = GenericProxyConfig(proxies)
 
 @app.route("/transcript", methods=["GET"])
