@@ -1,16 +1,8 @@
 from flask import Flask, request, jsonify
-import subprocess
-import uuid
+from yt_dlp import YoutubeDL
 import os
-from pathlib import Path
 
 app = Flask(__name__)
-
-PROXIES = [
-    "http://156.228.125.161:3129",
-    "http://156.228.102.99:3129",
-    "http://154.213.166.248:3129"
-]
 
 @app.route("/transcript", methods=["GET"])
 def get_transcript():
@@ -18,41 +10,33 @@ def get_transcript():
     if not video_id:
         return jsonify({"error": "Missing video_id"}), 400
 
-    video_url = f"https://www.youtube.com/watch?v={video_id}"
-    temp_dir = Path(f"/tmp/{uuid.uuid4()}")
-    temp_dir.mkdir(parents=True, exist_ok=True)
-
-    proxy = PROXIES[0]  # Rotate if needed
-    cmd = [
-        "yt-dlp",
-        "--proxy", proxy,
-        "--write-auto-sub",
-        "--sub-lang", "en",
-        "--skip-download",
-        "-o", str(temp_dir / "%(id)s.%(ext)s"),
-        video_url
-    ]
-
+    url = f"https://www.youtube.com/watch?v={video_id}"
+    
     try:
-        subprocess.run(cmd, check=True)
-        vtt_file = next(temp_dir.glob("*.vtt"))
+        ydl_opts = {
+            "skip_download": True,
+            "writesubtitles": True,
+            "writeautomaticsub": True,
+            "subtitlesformat": "vtt",
+            "subtitleslangs": ["en"],
+            "outtmpl": f"{video_id}.%(ext)s",
+        }
+        with YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+        
+        vtt_file = f"{video_id}.en.vtt"
+        if not os.path.exists(vtt_file):
+            return jsonify({"error": "Transcript not available"}), 404
+
         with open(vtt_file, "r", encoding="utf-8") as f:
-            lines = f.readlines()
+            content = f.read()
 
-        transcript = []
-        for line in lines:
-            if "-->" not in line and line.strip():
-                transcript.append(line.strip())
+        os.remove(vtt_file)
 
-        return jsonify({"transcript": transcript})
+        return jsonify({"transcript_vtt": content})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    finally:
-        # Clean up temp
-        for f in temp_dir.glob("*"):
-            f.unlink()
-        temp_dir.rmdir()
 
 if __name__ == "__main__":
     app.run(debug=True)
