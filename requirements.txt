@@ -1,5 +1,4 @@
---upgrade-strategy eager
 git+https://github.com/jdepoix/youtube-transcript-api.git@master#egg=youtube_transcript_api
-flask
+Flask
 gunicorn
 defusedxml
