@@ -5,7 +5,3 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     plan: free
-        envVars:
-      - key: PROXY_URL
-        value: http://YOUR_PROXY_IP:PORT
-    
