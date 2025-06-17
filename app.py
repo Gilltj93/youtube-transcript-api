@@ -14,10 +14,9 @@ def get_transcript():
     if not video_id:
         return jsonify({"error": "Missing video_id parameter"}), 400
 
-    # ✅ Correct way to create proxy config (list format)
+    # ✅ CORRECT format: list of proxy strings (no keyword arguments!)
     proxy_config = GenericProxyConfig([
-        "http://scraperapi:
-kezvt8im3kx8ak7ywwvk@proxy.scraperapi.com:8001"
+        "http://scraperapi:kezvt8im3kx8ak7ywwvk@proxy.scraperapi.com:8001"
     ])
 
     try:
