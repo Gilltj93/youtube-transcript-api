@@ -14,10 +14,11 @@ def get_transcript():
     if not video_id:
         return jsonify({"error": "Missing video_id parameter"}), 400
 
-    # Optional: set up a proxy to bypass region/IP blocks
-    proxy_config = GenericProxyConfig(
-        proxy_url="http://scraperapi:kezvt8im3kx8ak7ywwvk@proxy.scraperapi.com:8001"  # Replace with your proxy credentials
-    )
+    # ✅ Correct way to create proxy config (list format)
+    proxy_config = GenericProxyConfig([
+        "http://scraperapi:
+kezvt8im3kx8ak7ywwvk@proxy.scraperapi.com:8001"
+    ])
 
     try:
         transcript = YouTubeTranscriptApi.get_transcript(
