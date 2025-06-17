@@ -1,8 +1,9 @@
 services:
   - type: web
-    name: youtube-transcript-api
+    name: yt-transcript-api
     runtime: python
-    buildCommand: ""
+    buildCommand: |
+      apt-get update && apt-get install -y ffmpeg && pip install yt-dlp
     startCommand: gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
