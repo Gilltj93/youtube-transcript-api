@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from youtube_transcript_api import YouTubeTranscriptApi
-from youtube_transcript_api._proxy import GenericProxyConfig
+from youtube_transcript_api import GenericProxyConfig
 from youtube_transcript_api.formatters import JSONFormatter
 
 app = Flask(__name__)
