@@ -2,9 +2,11 @@ from flask import Flask, request, jsonify
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled
 from youtube_transcript_api._proxy import GenericProxyConfig
 import random
+import traceback
 
 app = Flask(__name__)
 
+# List of proxies
 PROXIES = [
     "http://156.228.125.161:3129",
     "http://156.228.102.99:3129",
@@ -39,8 +41,8 @@ def get_transcript():
         return jsonify(transcript)
     except TranscriptsDisabled:
         return jsonify({"error": "Transcripts are disabled for this video"}), 403
-       except Exception as e:
-        traceback.print_exc()  # Add this line to log the real error
+    except Exception as e:
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
