@@ -14,7 +14,7 @@ def get_transcript():
     if not video_id:
         return jsonify({"error": "Missing video_id parameter"}), 400
 
-    # ✅ CORRECT format: list of proxy strings (no keyword arguments!)
+    # ✅ Pass GenericProxyConfig directly
     proxy_config = GenericProxyConfig([
         "http://scraperapi:kezvt8im3kx8ak7ywwvk@proxy.scraperapi.com:8001"
     ])
@@ -22,7 +22,7 @@ def get_transcript():
     try:
         transcript = YouTubeTranscriptApi.get_transcript(
             video_id,
-            proxies=proxy_config.get_next_proxy()
+            proxies=proxy_config  # 🔥 this is now correct
         )
         return jsonify({"transcript": transcript})
 
