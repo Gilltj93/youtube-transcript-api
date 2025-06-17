@@ -1,43 +1,32 @@
 from flask import Flask, request, jsonify
-from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, VideoUnavailable
-from youtube_transcript_api._errors import NoTranscriptFound
+from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._proxy import GenericProxyConfig
-
-import youtube_transcript_api
-print("✅ Running local version from:", youtube_transcript_api.__file__)
+from youtube_transcript_api.formatters import JSONFormatter
 
 app = Flask(__name__)
 
-@app.route("/transcript", methods=["GET"])
-def get_transcript():
-    video_id = request.args.get("video_id")
-    if not video_id:
-        return jsonify({"error": "Missing video_id parameter"}), 400
+@app.route('/')
+def home():
+    return 'YouTube Transcript API is live!', 200
 
-    # ✅ Pass GenericProxyConfig directly
-    proxy_config = GenericProxyConfig([
-        "http://scraperapi:kezvt8im3kx8ak7ywwvk@proxy.scraperapi.com:8001"
-    ])
+@app.route('/transcript', methods=['GET'])
+def get_transcript():
+    video_id = request.args.get('video_id')
+    if not video_id:
+        return jsonify({'error': 'Missing video_id parameter'}), 400
 
     try:
-        transcript = YouTubeTranscriptApi.get_transcript(
-            video_id,
-            proxies=proxy_config  # 🔥 this is now correct
-        )
-        return jsonify({"transcript": transcript})
+        # Replace with your real proxy URL and credentials
+        proxy_config = GenericProxyConfig([
+            "http://scraperapi:kezvt8im3kx8ak7ywwvk@proxy.scraperapi.com:8001"
+        ])
 
-    except TranscriptsDisabled:
-        return jsonify({"error": "Transcripts are disabled for this video"}), 403
-    except VideoUnavailable:
-        return jsonify({"error": "Video is unavailable"}), 404
-    except NoTranscriptFound:
-        return jsonify({"error": "Transcript not found"}), 404
+        transcript = YouTubeTranscriptApi.get_transcript(video_id, proxies=proxy_config)
+        formatter = JSONFormatter()
+        return formatter.format_transcript(transcript), 200
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({'error': str(e)}), 500
 
-@app.route("/", methods=["GET"])
-def health_check():
-    return "YouTube Transcript API is running."
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+if __name__ == '__main__':
+    app.run(debug=True)
