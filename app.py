@@ -39,7 +39,8 @@ def get_transcript():
         return jsonify(transcript)
     except TranscriptsDisabled:
         return jsonify({"error": "Transcripts are disabled for this video"}), 403
-    except Exception as e:
+       except Exception as e:
+        traceback.print_exc()  # Add this line to log the real error
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
