@@ -1,25 +1,30 @@
 from flask import Flask, request, jsonify
 from youtube_transcript_api import YouTubeTranscriptApi
-import os
+from youtube_transcript_api._utils import TranscriptsDisabled, NoTranscriptFound, VideoUnavailable
+from youtube_transcript_api.formatters import JSONFormatter
+from youtube_transcript_api.proxy import GenericProxyConfig
 
 app = Flask(__name__)
-
-# Set your proxy IP here (for example: http://123.456.789.101:8080)
-PROXIES = {
-    "http": os.environ.get("PROXY_URL"),
-    "https": os.environ.get("PROXY_URL")
-}
 
 @app.route("/transcript", methods=["GET"])
 def get_transcript():
     video_id = request.args.get("video_id")
+    if not video_id:
+        return jsonify({"error": "Missing video_id parameter"}), 400
+
+    # Use a public proxy from ProxyScrape (replace with your real working proxy)
+    proxy = GenericProxyConfig(
+        https='http://your-proxy-ip:your-port'
+    )
+
     try:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id, proxies=PROXIES)
-        full_text = " ".join([entry["text"] for entry in transcript])
-        return jsonify({"transcript": full_text})
+        transcript = YouTubeTranscriptApi.get_transcript(video_id, proxies=proxy)
+        formatter = JSONFormatter()
+        return formatter.format_transcript(transcript)
+    except (TranscriptsDisabled, NoTranscriptFound, VideoUnavailable) as e:
+        return jsonify({"error": str(e)}), 404
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    from waitress import serve
-    serve(app, host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
+    app.run(debug=True)
