@@ -1,4 +1,4 @@
 Flask==2.3.3
 gunicorn==21.2.0
-youtube-transcript-api @ git+https://github.com/gladiaio/youtube-transcript-api.git
+git+https://github.com/Gilltj93/youtube-transcript-api.git
 defusedxml
